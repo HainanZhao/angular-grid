@@ -1,0 +1,53 @@
+{
+  "name": "angular-high-performance-grid",
+  "version": "1.0.0",
+  "description": "High-performance Angular 18 data grid with row grouping",
+  "license": "MIT",
+  "author": "Your Name",
+  "keywords": [
+    "angular",
+    "angular18",
+    "grid",
+    "table",
+    "datagrid",
+    "virtual-scrolling",
+    "performance",
+    "row-grouping"
+  ],
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "build:lib": "ng-packagr -p ng-package.json",
+    "test": "ng test",
+    "lint": "ng lint",
+    "benchmark": "node benchmarks/run.js"
+  },
+  "peerDependencies": {
+    "@angular/common": "^18.0.0",
+    "@angular/core": "^18.0.0",
+    "@angular/cdk": "^18.0.0",
+    "@angular/platform-browser": "^18.0.0",
+    "@angular/platform-browser-dynamic": "^18.0.0",
+    "rxjs": "~7.8.0"
+  },
+  "devDependencies": {
+    "@angular/cli": "^18.0.0",
+    "@angular/compiler-cli": "^18.0.0",
+    "@types/node": "^20.0.0",
+    "typescript": "~5.4.0",
+    "ng-packagr": "^18.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/angular-high-performance-grid"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/angular-high-performance-grid/issues"
+  },
+  "homepage": "https://github.com/your-org/angular-high-performance-grid#readme"
+}

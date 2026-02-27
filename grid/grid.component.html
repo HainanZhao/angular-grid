@@ -1,0 +1,47 @@
+<div class="grid-container">
+  <!-- Header Row -->
+  <div class="grid-header" [style.height.px]="headerHeight">
+    <div class="grid-row-header-group"></div>
+    @for (col of columnDefs$(); track col.field) {
+      <div
+        class="grid-header-cell"
+        [style.width.px]="col.width || 150"
+        [style.minWidth.px]="col.minWidth"
+        [style.maxWidth.px]="col.maxWidth"
+        [class]="col.headerClass"
+      >
+        <span class="header-text">{{ col.headerName || col.field }}</span>
+        @if (col.sortable) {
+          <span class="sort-indicator">↕</span>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Virtual Scroll Viewport -->
+  <cdk-virtual-scroll-viewport
+    [itemSize]="rowHeight"
+    class="grid-viewport"
+    [style.height.px]="totalRowCount() * rowHeight"
+  >
+    @for (row of visibleRows(); track trackByRow($index, row)) {
+      <app-grid-row
+        [row]="row"
+        [columns]="columnDefs$()"
+        [rowHeight]="rowHeight"
+        (groupToggle)="onGroupToggle($event.groupId, $event.node)"
+        (rowClick)="onRowClick($event, row)"
+        (cellClick)="onCellClick($event, row, $event.column)"
+      />
+    } @empty {
+      <div class="grid-empty">No data to display</div>
+    }
+  </cdk-virtual-scroll-viewport>
+
+  <!-- Pagination (Optional) -->
+  @if (pagination) {
+    <div class="grid-pagination">
+      <span>Showing {{ totalRowCount() }} rows</span>
+    </div>
+  }
+</div>
