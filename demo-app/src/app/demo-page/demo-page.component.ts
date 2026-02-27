@@ -1,7 +1,7 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GridComponent } from '../../../grid/grid.component';
-import { ColDef, RowClickedEvent, CellClickedEvent } from '../../../grid/grid.types';
+import { GridComponent } from '../grid/grid.component';
+import { ColDef, RowClickedEvent, CellClickedEvent } from '../grid/grid.types';
 
 interface Employee {
   id: number;
@@ -39,7 +39,7 @@ export class DemoPageComponent implements OnInit {
       headerName: 'Salary',
       width: 120,
       sortable: true,
-      valueFormatter: (params) => `$${params.value?.toLocaleString()}`,
+      valueFormatter: (params: any) => `$${params.value?.toLocaleString()}`,
     },
     { field: 'location', headerName: 'Location', width: 150 },
     { field: 'startDate', headerName: 'Start Date', width: 130 },
@@ -47,7 +47,7 @@ export class DemoPageComponent implements OnInit {
       field: 'performance',
       headerName: 'Performance',
       width: 120,
-      cellRenderer: (params) => {
+      cellRenderer: (params: any) => {
         const value = params.value;
         const color = value >= 80 ? '#22c55e' : value >= 60 ? '#eab308' : '#ef4444';
         return `<span style="color: ${color}; font-weight: bold;">${value}%</span>`;

@@ -1,0 +1,206 @@
+/* ==========================================================================
+   Angular 18 High-Performance Grid - Styles
+   ========================================================================== */
+
+.grid-container {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-size: 14px;
+  background: #fff;
+}
+
+/* ==========================================================================
+   Header
+   ========================================================================== */
+
+.grid-header {
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  border-bottom: 2px solid #d0d0d0;
+  font-weight: 600;
+  color: #333;
+  flex-shrink: 0;
+}
+
+.grid-row-header-group {
+  width: 24px;
+  flex-shrink: 0;
+  border-right: 1px solid #e0e0e0;
+}
+
+.grid-header-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border-right: 1px solid #e0e0e0;
+  height: 100%;
+  overflow: hidden;
+  user-select: none;
+}
+
+.header-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sort-indicator {
+  margin-left: 4px;
+  color: #999;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.sort-indicator:hover {
+  color: #333;
+}
+
+/* ==========================================================================
+   Viewport (Virtual Scroll)
+   ========================================================================== */
+
+.grid-viewport {
+  overflow: auto;
+  contain: strict;
+  will-change: transform;
+}
+
+.grid-viewport::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.grid-viewport::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.grid-viewport::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 5px;
+}
+
+.grid-viewport::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* ==========================================================================
+   Empty State
+   ========================================================================== */
+
+.grid-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #999;
+  font-style: italic;
+}
+
+/* ==========================================================================
+   Pagination
+   ========================================================================== */
+
+.grid-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border-top: 1px solid #d0d0d0;
+  font-size: 13px;
+  color: #666;
+}
+
+/* ==========================================================================
+   Row Styles (in component, but additional overrides here)
+   ========================================================================== */
+
+.grid-row {
+  box-sizing: border-box;
+}
+
+.grid-row-group {
+  background: linear-gradient(to right, #fafafa, #fff);
+}
+
+/* ==========================================================================
+   Cell Styles (in component, but additional overrides here)
+   ========================================================================== */
+
+.grid-cell {
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .grid-header-cell,
+  .grid-cell {
+    padding: 0 8px;
+    font-size: 13px;
+  }
+}
+
+/* ==========================================================================
+   Dark Mode Support (Optional)
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+  .grid-container {
+    background: #1e1e1e;
+    border-color: #333;
+    color: #e0e0e0;
+  }
+
+  .grid-header {
+    background: #2d2d2d;
+    border-bottom-color: #444;
+    color: #e0e0e0;
+  }
+
+  .grid-header-cell {
+    border-right-color: #444;
+  }
+
+  .grid-row-header-group {
+    border-right-color: #444;
+  }
+
+  .grid-row-group {
+    background: linear-gradient(to right, #2d2d2d, #1e1e1e);
+  }
+
+  .grid-row {
+    border-bottom-color: #333;
+  }
+
+  .grid-cell {
+    border-right-color: #333;
+  }
+
+  .grid-pagination {
+    background: #2d2d2d;
+    border-top-color: #444;
+    color: #aaa;
+  }
+
+  .grid-viewport::-webkit-scrollbar-track {
+    background: #2d2d2d;
+  }
+
+  .grid-viewport::-webkit-scrollbar-thumb {
+    background: #555;
+  }
+
+  .grid-viewport::-webkit-scrollbar-thumb:hover {
+    background: #666;
+  }
+}
