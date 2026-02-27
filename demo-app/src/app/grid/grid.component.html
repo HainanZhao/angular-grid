@@ -2,7 +2,7 @@
   <!-- Header Row -->
   <div class="grid-header" [style.height.px]="headerHeight">
     <div class="grid-row-header-group"></div>
-    @for (col of columnDefs$(); track col.field) {
+    @for (col of gridService.columnDefs(); track col.field) {
       <div
         class="grid-header-cell"
         [style.width.px]="col.width || 150"
@@ -22,12 +22,12 @@
   <cdk-virtual-scroll-viewport
     [itemSize]="rowHeight"
     class="grid-viewport"
-    [style.height.px]="totalRowCount() * rowHeight"
+    [style.height.px]="gridService.totalRowCount() * rowHeight"
   >
-    @for (row of visibleRows(); track trackByRow($index, row)) {
+    @for (row of gridService.visibleRows(); track trackByRow($index, row)) {
       <app-grid-row
         [row]="row"
-        [columns]="columnDefs$()"
+        [columns]="gridService.columnDefs()"
         [rowHeight]="rowHeight"
         (groupToggle)="onGroupToggle($event.groupId, $event.node)"
         (rowClick)="onRowClick($event, row)"
@@ -41,7 +41,7 @@
   <!-- Pagination (Optional) -->
   @if (pagination) {
     <div class="grid-pagination">
-      <span>Showing {{ totalRowCount() }} rows</span>
+      <span>Showing {{ gridService.totalRowCount() }} rows</span>
     </div>
   }
 </div>

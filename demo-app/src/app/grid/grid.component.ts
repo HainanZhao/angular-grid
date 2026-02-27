@@ -264,7 +264,7 @@ export class GridComponent<T = any> implements OnInit, OnDestroy {
   // ==========================================================================
 
   constructor(
-    private gridService: GridService<T>,
+    public gridService: GridService<T>,
     private ngZone: NgZone
   ) {}
 
