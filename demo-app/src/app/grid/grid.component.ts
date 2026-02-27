@@ -9,12 +9,11 @@ import {
   Output,
   EventEmitter,
   ChangeDetectionStrategy,
-  signal,
-  computed,
   OnInit,
   OnDestroy,
   NgZone,
   ViewChild,
+  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ScrollingModule, CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
@@ -26,177 +25,74 @@ import {
   GroupExpandedEvent,
   GridApi,
   ColumnApi,
+  RowNode,
 } from './grid.types';
 
+// Forward declarations for components used in template
 @Component({
-  selector: 'app-grid',
+  selector: 'app-grid-cell',
   standalone: true,
-  imports: [CommonModule, ScrollingModule, GridRowComponent],
-  providers: [GridService],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './grid.component.html',
-  styleUrls: ['./grid.component.css'],
+  template: `
+    <div
+      class="grid-cell"
+      [style.width.px]="column.width || 150"
+      [class]="column.cellClass"
+      (click)="onClick($event)"
+    >
+      @if (column.cellRenderer) {
+        <span [innerHTML]="renderedValue"></span>
+      } @else {
+        <span>{{ displayValue }}</span>
+      }
+    </div>
+  `,
+  styles: [`
+    .grid-cell {
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      height: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border-right: 1px solid #e0e0e0;
+    }
+  `],
 })
-export class GridComponent<T = any> implements OnInit, OnDestroy {
-  // ==========================================================================
-  // Inputs (AG Grid Compatible API)
-  // ==========================================================================
+export class GridCellComponent<T = any> {
+  @Input() data: T | null = null;
+  @Input() column: ColDef<T> = {} as ColDef<T>;
+  @Input() value: any = null;
 
-  @Input()
-  set rowData(value: T[] | undefined) {
-    if (value) {
-      this.gridService.setRowData(value);
+  @Output() cellClicked = new EventEmitter<MouseEvent>();
+
+  get displayValue(): string {
+    if (this.value === null || this.value === undefined) {
+      return '';
     }
-  }
-
-  @Input()
-  set columnDefs(value: ColDef<T>[] | undefined) {
-    if (value) {
-      this.gridService.setColumnDefs(value);
+    if (this.column.valueFormatter) {
+      return this.column.valueFormatter({ value: this.value, data: this.data });
     }
+    return String(this.value);
   }
 
-  @Input()
-  set groupBy(value: (keyof T)[] | undefined) {
-    if (value) {
-      this.gridService.setGroupBy(value);
+  get renderedValue(): string {
+    if (this.column.cellRenderer && this.data) {
+      return this.column.cellRenderer({
+        data: this.data,
+        value: this.value,
+        column: this.column,
+        api: {} as GridApi<T>,
+      });
     }
+    return this.displayValue;
   }
 
-  @Input() rowHeight = 50;
-  @Input() headerHeight = 50;
-  @Input() pagination = false;
-  @Input() paginationPageSize = 100;
-
-  // ==========================================================================
-  // Outputs (Events)
-  // ==========================================================================
-
-  @Output() rowClicked = new EventEmitter<RowClickedEvent<T>>();
-  @Output() cellClicked = new EventEmitter<CellClickedEvent<T>>();
-  @Output() groupExpanded = new EventEmitter<GroupExpandedEvent<T>>();
-  @Output() gridReady = new EventEmitter<{ api: GridApi<T>; columnApi: ColumnApi<T> }>();
-
-  // ==========================================================================
-  // ViewChild References
-  // ==========================================================================
-
-  @ViewChild(CdkVirtualScrollViewport) viewport?: CdkVirtualScrollViewport;
-
-  // ==========================================================================
-  // Computed Signals (From Service)
-  // ==========================================================================
-
-  readonly visibleRows = this.gridService.visibleRows;
-  readonly totalRowCount = this.gridService.totalRowCount;
-  readonly columnDefs$ = this.gridService.columnDefs;
-
-  // ==========================================================================
-  // Grid API
-  // ==========================================================================
-
-  private _api: GridApi<T> | null = null;
-
-  get api(): GridApi<T> | null {
-    return this._api;
-  }
-
-  // ==========================================================================
-  // Constructor
-  // ==========================================================================
-
-  constructor(
-    private gridService: GridService<T>,
-    private ngZone: NgZone
-  ) {}
-
-  // ==========================================================================
-  // Lifecycle
-  // ==========================================================================
-
-  ngOnInit(): void {
-    this.gridService.setRowHeight(this.rowHeight);
-
-    // Initialize API outside zone for performance
-    this.ngZone.runOutsideAngular(() => {
-      this._api = this.gridService.getApi();
-
-      // Emit grid ready event
-      setTimeout(() => {
-        if (this._api) {
-          this.gridReady.emit({
-            api: this._api,
-            columnApi: this.createColumnApi(),
-          });
-        }
-      }, 0);
-    });
-  }
-
-  ngOnDestroy(): void {
-    // Cleanup if needed
-  }
-
-  // ==========================================================================
-  // Event Handlers
-  // ==========================================================================
-
-  onGroupToggle(groupId: string, node: any): void {
-    this.gridService.toggleGroup(groupId);
-    this.groupExpanded.emit({ node, expanded: true });
-  }
-
-  onRowClick(event: MouseEvent, row: any): void {
-    this.rowClicked.emit({
-      data: row.node.data,
-      node: row.node,
-      event,
-    });
-  }
-
-  onCellClick(event: MouseEvent, row: any, col: ColDef<T>): void {
-    this.cellClicked.emit({
-      data: row.node.data,
-      node: row.node,
-      column: col,
-      value: row.node.data ? row.node.data[col.field as keyof T] : null,
-      event,
-    });
-  }
-
-  // ==========================================================================
-  // TrackBy Functions (Critical for Performance)
-  // ==========================================================================
-
-  trackByRow(index: number, row: any): string {
-    return row.node.id;
-  }
-
-  trackByColumn(index: number, col: ColDef<T>): string {
-    return col.field as string;
-  }
-
-  // ==========================================================================
-  // Utility
-  // ==========================================================================
-
-  private createColumnApi(): ColumnApi<T> {
-    return {
-      getAllColumns: () => this.gridService.columnDefs(),
-      getColumn: (colId) => this.gridService.columnDefs().find((c) => c.field === colId) ?? null,
-      setColumnWidth: (colId, width) => {
-        // Implement column width management
-      },
-      autoSizeColumns: (colIds) => {
-        // Implement auto-sizing
-      },
-    };
+  onClick(event: MouseEvent): void {
+    this.cellClicked.emit(event);
   }
 }
-
-// ============================================================================
-// Grid Row Component (Individual Row - OnPush)
-// ============================================================================
 
 @Component({
   selector: 'app-grid-row',
@@ -292,78 +188,170 @@ export class GridRowComponent<T = any> {
 
   getCellData(row: any, col: ColDef<T>): any {
     if (!row.node.data) {
-      // Group row - show group key
       return row.node.key;
     }
     return row.node.data[col.field as keyof T];
   }
 }
 
-// ============================================================================
-// Grid Cell Component (Individual Cell - OnPush)
-// ============================================================================
-
 @Component({
-  selector: 'app-grid-cell',
+  selector: 'app-grid',
   standalone: true,
+  imports: [CommonModule, ScrollingModule, GridRowComponent, GridCellComponent],
+  providers: [GridService],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div
-      class="grid-cell"
-      [style.width.px]="column.width || 150"
-      [class]="column.cellClass"
-      (click)="onClick($event)"
-    >
-      @if (column.cellRenderer) {
-        <span [innerHTML]="renderedValue"></span>
-      } @else {
-        <span>{{ displayValue }}</span>
-      }
-    </div>
-  `,
-  styles: [`
-    .grid-cell {
-      display: flex;
-      align-items: center;
-      padding: 0 12px;
-      height: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      border-right: 1px solid #e0e0e0;
-    }
-  `],
+  templateUrl: './grid.component.html',
+  styleUrls: ['./grid.component.css'],
 })
-export class GridCellComponent<T = any> {
-  @Input() data: T | null = null;
-  @Input() column: ColDef<T> = {} as ColDef<T>;
-  @Input() value: any = null;
+export class GridComponent<T = any> implements OnInit, OnDestroy {
+  // ==========================================================================
+  // Inputs (AG Grid Compatible API)
+  // ==========================================================================
 
-  @Output() cellClicked = new EventEmitter<MouseEvent>();
-
-  get displayValue(): string {
-    if (this.value === null || this.value === undefined) {
-      return '';
+  @Input()
+  set rowData(value: T[] | undefined) {
+    if (value) {
+      this.gridService.setRowData(value);
     }
-    if (this.column.valueFormatter) {
-      return this.column.valueFormatter({ value: this.value, data: this.data });
-    }
-    return String(this.value);
   }
 
-  get renderedValue(): string {
-    if (this.column.cellRenderer && this.data) {
-      return this.column.cellRenderer({
-        data: this.data,
-        value: this.value,
-        column: this.column,
-        api: {} as GridApi<T>,
-      });
+  @Input()
+  set columnDefs(value: ColDef<T>[] | undefined) {
+    if (value) {
+      this.gridService.setColumnDefs(value);
     }
-    return this.displayValue;
   }
 
-  onClick(event: MouseEvent): void {
-    this.cellClicked.emit(event);
+  @Input()
+  set groupBy(value: (keyof T)[] | undefined) {
+    if (value) {
+      this.gridService.setGroupBy(value);
+    }
+  }
+
+  @Input() rowHeight = 50;
+  @Input() headerHeight = 50;
+  @Input() pagination = false;
+  @Input() paginationPageSize = 100;
+
+  // ==========================================================================
+  // Outputs (Events)
+  // ==========================================================================
+
+  @Output() rowClicked = new EventEmitter<RowClickedEvent<T>>();
+  @Output() cellClicked = new EventEmitter<CellClickedEvent<T>>();
+  @Output() groupExpanded = new EventEmitter<GroupExpandedEvent<T>>();
+  @Output() gridReady = new EventEmitter<{ api: GridApi<T>; columnApi: ColumnApi<T> }>();
+
+  // ==========================================================================
+  // ViewChild References
+  // ==========================================================================
+
+  @ViewChild(CdkVirtualScrollViewport) viewport?: CdkVirtualScrollViewport;
+
+  // ==========================================================================
+  // Grid API
+  // ==========================================================================
+
+  private _api: GridApi<T> | null = null;
+
+  get api(): GridApi<T> | null {
+    return this._api;
+  }
+
+  // ==========================================================================
+  // Constructor
+  // ==========================================================================
+
+  constructor(
+    private gridService: GridService<T>,
+    private ngZone: NgZone
+  ) {}
+
+  // ==========================================================================
+  // Lifecycle
+  // ==========================================================================
+
+  ngOnInit(): void {
+    this.gridService.setRowHeight(this.rowHeight);
+
+    // Initialize API outside zone for performance
+    this.ngZone.runOutsideAngular(() => {
+      this._api = this.gridService.getApi();
+
+      // Emit grid ready event
+      setTimeout(() => {
+        if (this._api) {
+          this.gridReady.emit({
+            api: this._api,
+            columnApi: this.createColumnApi(),
+          });
+        }
+      }, 0);
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Cleanup if needed
+  }
+
+  // ==========================================================================
+  // Event Handlers
+  // ==========================================================================
+
+  onGroupToggle(groupId: string, node: any): void {
+    this.gridService.toggleGroup(groupId);
+    this.groupExpanded.emit({ node, expanded: true });
+  }
+
+  onRowClick(event: MouseEvent, row: any): void {
+    this.rowClicked.emit({
+      data: row.node.data,
+      node: row.node,
+      event,
+    });
+  }
+
+  onCellClick(event: MouseEvent, row: any, col: ColDef<T>): void {
+    this.cellClicked.emit({
+      data: row.node.data,
+      node: row.node,
+      column: col,
+      value: row.node.data ? row.node.data[col.field as keyof T] : null,
+      event,
+    });
+  }
+
+  handleCellClick(eventData: { event: MouseEvent; column: ColDef<T> }, row: any): void {
+    this.onCellClick(eventData.event, row, eventData.column);
+  }
+
+  // ==========================================================================
+  // TrackBy Functions (Critical for Performance)
+  // ==========================================================================
+
+  trackByRow(index: number, row: any): string {
+    return row.node.id;
+  }
+
+  trackByColumn(index: number, col: ColDef<T>): string {
+    return col.field as string;
+  }
+
+  // ==========================================================================
+  // Utility
+  // ==========================================================================
+
+  private createColumnApi(): ColumnApi<T> {
+    return {
+      getAllColumns: () => this.gridService.columnDefs(),
+      getColumn: (colId) => this.gridService.columnDefs().find((c) => c.field === colId) ?? null,
+      setColumnWidth: (colId, width) => {
+        // Implement column width management
+      },
+      autoSizeColumns: (colIds) => {
+        // Implement auto-sizing
+      },
+    };
   }
 }

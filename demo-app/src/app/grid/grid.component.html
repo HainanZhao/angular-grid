@@ -31,7 +31,7 @@
         [rowHeight]="rowHeight"
         (groupToggle)="onGroupToggle($event.groupId, $event.node)"
         (rowClick)="onRowClick($event, row)"
-        (cellClick)="onCellClick($event, row, $event.column)"
+        (cellClick)="handleCellClick($event, row)"
       />
     } @empty {
       <div class="grid-empty">No data to display</div>

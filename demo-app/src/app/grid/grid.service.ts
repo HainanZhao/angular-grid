@@ -121,7 +121,6 @@ export class GridService<T = any> {
       const groupNode = this.createRowNode(null, id, true, {
         field: field as string,
         key: groupKey,
-        value: groupKey,
       });
 
       const children = this.buildTree(items, groupBy, level + 1);
